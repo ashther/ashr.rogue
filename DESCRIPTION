@@ -1,0 +1,19 @@
+Package: ashr.rogue
+Type: Package
+Title: What the Package Does (Title Case)
+Version: 0.1.0
+Author: Who wrote it
+Maintainer: The package maintainer <yourself@somewhere.net>
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+Depends: R (>= 3.1.0)
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports: 
+    httr
+URL: https://github.com/ashther/ashr.rogue
+BugReports: https://github.com/ashther/ashr.rogue/issues
+RoxygenNote: 6.1.1
+Suggests: 
+    testthat

@@ -58,15 +58,17 @@ ROGUE <- function(.f = c('GET', 'POST', 'PUT', 'DELETE'), ...,
       )
       res_got <- 1
     }, error = function(e) {
-      print(e$message)
+      message(e$message)
     })
 
-    if (res_got == 1) break()
+    if (res_got == 1)
+      break()
     iter <- iter + 1
   }
 
   if (res_got != 1 && iter > iter_max) {
-    stop('Try too many times.')
+    message('Try too many times.')
+    return(list(response = NULL, proxy_good = NULL))
   }
 
   list(response = response, proxy_good = proxy_good)

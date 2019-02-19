@@ -31,6 +31,6 @@ proxy <- list(
   list(ip = '1.1.1.1', port = 3128, times = 1),
   list(ip = '2.2.2.2', port = 3128, times = 2) # use times as prob in sample
 )
-ROGUE('GET', url = 'http://httpbin.org/get', .proxy = proxy, .user_agent = user_agent)
+ROGUE('GET', url = 'http://httpbin.org/get', .proxy = proxy, .user_agent = useragent)
 }
 }

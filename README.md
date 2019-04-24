@@ -22,3 +22,7 @@ use `ROGUE` function just like in `httr`:
 ROGUE('GET', url = 'http://httpbin.org/get', .proxy = proxy, .user_agent = useragent, iter_max = 10)
 ```
 
+## TODO
+- proxyBadConfirm function
+- R6 maybe?
+

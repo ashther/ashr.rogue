@@ -1,7 +1,7 @@
 context("test-rogue")
 
 test_that("rogue function", {
-  proxy_good <- list(list(ip = "61.128.208.94", port = 3128, times = 1))
+  proxy_good <- list(list(ip = "121.15.254.150", port = 8081, times = 1))
   user_agent_good <- "AdsBot-Google ( http://www.google.com/adsbot.html)"
 
   temp <- ROGUE(

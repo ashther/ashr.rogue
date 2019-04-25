@@ -38,9 +38,11 @@ ROGUE <- function(.f = c('GET', 'POST', 'PUT', 'DELETE'), ...,
   iter <- 1
   parameters <- list(...)
 
+  proxy_bad <- list()
   while (iter <= iter_max) {
     if (!is.null(.proxy)) {
       proxy <- proxySelect(.proxy)
+      proxy_bad <- append(proxy_bad, list(proxy))
       parameters <- append(parameters, list(use_proxy(proxy$ip, proxy$port)))
     }
     if (!is.null(.user_agent)) {
@@ -56,6 +58,9 @@ ROGUE <- function(.f = c('GET', 'POST', 'PUT', 'DELETE'), ...,
         ip = response$request$options$proxy,
         port = response$request$options$proxyport
       )
+      proxy_bad <- Filter(function(x){
+        x$ip != proxy_good$ip & x$port != proxy_good$port
+      }, proxy_bad)
       res_got <- 1
     }, error = function(e) {
       message(e$message)
@@ -68,8 +73,8 @@ ROGUE <- function(.f = c('GET', 'POST', 'PUT', 'DELETE'), ...,
 
   if (res_got != 1 && iter > iter_max) {
     message('Try too many times.')
-    return(list(response = NULL, proxy_good = NULL))
+    return(list(response = NULL, proxy_good = NULL, proxy_bad = proxy_bad))
   }
 
-  list(response = response, proxy_good = proxy_good)
+  list(response = response, proxy_good = proxy_good, proxy_bad = proxy_bad)
 }

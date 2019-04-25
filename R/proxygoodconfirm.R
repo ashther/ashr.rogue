@@ -44,3 +44,51 @@ proxyGoodConfirm <- function(proxy_good, .proxy) {
 
   .proxy
 }
+
+# core function for proxyBadConfirm
+.proxyBadConfirm <- function(proxy_bad, .proxy) {
+  if (class(.proxy) != 'list')
+    stop('.proxy must be list class')
+
+  if (length(.proxy) == 0) {
+    .proxy[[1]] <- modifyList(proxy_bad, list(times = 1))
+    return(.proxy)
+  }
+
+  i <- 1
+  while (TRUE) {
+    temp <- .proxy[[i]]
+    if (temp$ip == proxy_bad$ip && temp$port == proxy_bad$port) {
+
+      times <- ifelse('times' %in% names(temp), max(temp$times - 1, 1), 1)
+      .proxy[[i]] <- modifyList(temp, list(times = times))
+      break()
+
+    }
+
+    i <- i + 1
+    if (i > length(.proxy))
+      break()
+  }
+
+  .proxy
+}
+
+#' @title confirm bad proxy
+#'
+#' @param proxy_bad todo
+#' @param .proxy todo
+#'
+#' @return todo
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'
+#' }
+proxyBadConfirm <- function(proxy_bad, .proxy) {
+  for (p in proxy_bad) {
+    .proxy <- .proxyBadConfirm(p, .proxy)
+  }
+  .proxy
+}

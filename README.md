@@ -23,6 +23,7 @@ ROGUE('GET', url = 'http://httpbin.org/get', .proxy = proxy, .user_agent = usera
 ```
 
 ## TODO
+- fix bug in ROGUE function, add sys sleep time between request
 - proxyBadConfirm function
 - R6 maybe?
 

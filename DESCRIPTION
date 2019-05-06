@@ -16,4 +16,5 @@ URL: https://github.com/ashther/ashr.rogue
 BugReports: https://github.com/ashther/ashr.rogue/issues
 RoxygenNote: 6.1.1
 Suggests: 
-    testthat
+    testthat,
+    covr

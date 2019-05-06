@@ -1,6 +1,6 @@
 # ashr.rogue
 [![Travis build status](https://travis-ci.org/ashther/ashr.rogue.svg?branch=master)](https://travis-ci.org/ashther/ashr.rogue)
-[![R Style Guide: Good Parts](https://img.shields.io/badge/code%20style-goodparts-blue.svg)](http://adv-r.had.co.nz/Style.html)
+[![Coverage status](https://codecov.io/gh/ashther/ashr.rogue/branch/master/graph/badge.svg)](https://codecov.io/github/ashther/ashr.rogue?branch=master)
 [![lifecycle](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
 
 The goal of ashr.rogue is to provide simple function which wraps `httr` package, function like `GET` will use random proxy and user agent with multiple try until got the right response.

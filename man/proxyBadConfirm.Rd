@@ -17,8 +17,3 @@ todo
 \description{
 confirm bad proxy
 }
-\examples{
-\dontrun{
-
-}
-}

@@ -81,11 +81,6 @@ proxyGoodConfirm <- function(proxy_good, .proxy) {
 #'
 #' @return todo
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 proxyBadConfirm <- function(proxy_bad, .proxy) {
   for (p in proxy_bad) {
     .proxy <- .proxyBadConfirm(p, .proxy)

@@ -1,4 +1,51 @@
-
+#' Object to make http request
+#'
+#' Make http request with random proxy and useragent, try until got the response in
+#' specific max iter times.
+#'
+#' @section Usage:
+#' \preformatted{
+#' rogue <- Rogue$new(proxy = proxy, useragent = useragent, iter_max = 10,
+#'                    is_record = TRUE, is_random = FALSE, is_quite = FALSE)
+#'
+#' rogue$proxy_add(proxy, delete = FALSE)
+#' rogue$proxy_show()
+#'
+#' rogue$get(...)
+#' rogue$post(...)
+#' rogue$put(...)
+#' rogue$delete(...)
+#'
+#' rogue$proxy_show()
+#' }
+#'
+#' @section Arguments:
+#' \describe{
+#'   \item{proxy}{proxy list, with \code{ip} and \code{port} elements at least, the
+#'     object initialization process will check the list, \code{times} element will
+#'     be append if it does not exist, and the value is 1}
+#'   \item{useragent}{multiple user agent character vector}
+#'   \item{iter_max}{the max times to try send the http request, it should be not
+#'     bigger than the length of proxy list}
+#'   \item{is_record}{if record the history of connecting to proxy, the result will
+#'     be used in select better proxy}
+#'   \item{is_random}{if select proxy based on the probability, which is the successful
+#'     connecting times for each proxy}
+#'   \item{is_quite}{if output the error message when try to connect proxy}
+#'   \item{delete}{if delete old and worse proxy when add new ones}
+#'   \item{...}{arguments send to function of \code{httr} package}
+#' }
+#'
+#' @section Details:
+#'
+#' \code{Rogue$new()} creates a new Rogue object
+#' \code{rogue$proxy_add()} add new proxy for requesting
+#' \code{rogue$proxy_show()} show the proxy connecting history in \code{tibble} format
+#' \code{rogue$get()} send \code{get} request to server
+#' \code{rogue$post()} send \code{post} request to server
+#' \code{rogue$put()} send \code{put} request to server
+#' \code{rogue$delete()} send \code{delete} request to server
+#'
 #' @importFrom R6 R6Class
 #' @name Rogue
 NULL
@@ -15,46 +62,22 @@ Rogue <- R6Class(
     is_quite = FALSE,
 
     # initialize the object
-    initialize = function(proxy = NULL, useragent = NULL, iter_max = 10,
+    initialize = function(proxy = NULL, useragent = NULL,
+                          iter_max = min(10, length(proxy)),
                           is_record = FALSE, is_random = FALSE, is_quite = FALSE) {
-      if (!is.null(proxy)) {
-        if (!'list' %in% class(proxy))
-          stop('proxy must be list class', call. = FALSE)
 
-        self$proxy <- lapply(proxy, function(x) {
-          if (!all(c('ip', 'port') %in% names(x)))
-            stop('proxy must have ip and port at least', call. = FALSE)
-          if (!is.character(x$ip))
-            stop(
-              sprintf('ip must be character, not %s', typeof(x$ip)),
-              call. = FALSE
-            )
-          if (!is.numeric(x$port))
-            stop(
-              sprintf('port must be integer or numeric, not %s', typeof(x$port)),
-              call. = FALSE
-            )
-
-          if (!'times' %in% names(x))
-            x$times <- 1
-          if (!is.numeric(x$times))
-            stop(
-              sprintf('times must be integer or numeric, not %s', typeof(x$times)),
-              call. = FALSE
-            )
-
-          x
-        })
-      } else {
-        self$proxy <- proxy
-      }
+      self$proxy <- private$proxyCheck(proxy)
 
       if (!is.numeric(iter_max))
         stop(
           sprintf('iter_max must be integer or numeric, not %s', typeof(iter_max)),
           call. = FALSE
         )
-      # TODO add warning when iter_max bigger than proxy length
+      if (iter_max > length(proxy))
+        warning(
+          sprintf('iter_max should be not bigger than the length of proxy'),
+          call. = FALSE
+        )
       if (!is.logical(is_record))
         stop(
           sprintf('is_record must be logical, not %s', typeof(is_record)),
@@ -86,34 +109,87 @@ Rogue <- R6Class(
 
     # add proxy by users anytime
     proxy_add = function(proxy, delete = FALSE) {
+      proxy <- private$proxycheck(proxy)
+      if (length(proxy) == 0) {
+        warning('no new proxy to add', call. = FALSE)
+        return(invisible())
+      }
 
+      if (delete) {
+        proxy_to_delete <- Filter(function(x) x$times == 1, self$proxy)
+        if (length(proxy_to_delete) > length(proxy)) {
+          proxy_to_delete <- sample(proxy_to_delete, length(proxy))
+        }
+        self$proxy <- setdiff(self$proxy, proxy_to_delete)
+      }
+      self$proxy <- append(self$proxy, proxy)
+
+      invisible(TRUE)
     },
 
     # show proxy with the tibble format
-    proxy_show = function(proxy) {
-
+    # TODO add dplyr to suggest in DESCRIPTION
+    proxy_show = function() {
+      proxy <- lapply(self$proxy, dplyr::as_tibble)
+      proxy <- dplyr::bind_rows(proxy)
+      proxy <- dplyr::select(proxy, ip, port, times, dplyr::everything())
+      dplyr::arrange(proxy, -times)
     },
 
     # http get
     get = function(...) {
-      private$ROGUE('GET', ...)
+      private$request('GET', ...)
     },
 
     # http post
     post = function(...) {
-      private$ROGUE('POST', ...)
+      private$request('POST', ...)
     },
 
     # http put
     put = function(...) {
-      private$ROGUE('PUT', ...)
+      private$request('PUT', ...)
     },
 
     # http delete
     delete = function(...) {
-      private$ROGUE('DELETE', ...)
+      private$request('DELETE', ...)
     }
   ), private = list(
+
+    proxyCheck = function(proxy) {
+      if (!is.null(proxy)) {
+        if (!'list' %in% class(proxy))
+          stop('proxy must be list class', call. = FALSE)
+
+        proxy <- lapply(proxy, function(x) {
+          if (!all(c('ip', 'port') %in% names(x)))
+            stop('proxy must have ip and port at least', call. = FALSE)
+          if (!is.character(x$ip))
+            stop(
+              sprintf('ip must be character, not %s', typeof(x$ip)),
+              call. = FALSE
+            )
+          if (!is.numeric(x$port))
+            stop(
+              sprintf('port must be integer or numeric, not %s', typeof(x$port)),
+              call. = FALSE
+            )
+
+          if (!'times' %in% names(x))
+            x$times <- 1
+          if (!is.numeric(x$times))
+            stop(
+              sprintf('times must be integer or numeric, not %s', typeof(x$times)),
+              call. = FALSE
+            )
+
+          x
+        })
+      }
+
+      unique(proxy)
+    },
 
     # select from self proxys, based on times
     # all proxys including initializing and adding, must has elements with times name
@@ -201,7 +277,7 @@ Rogue <- R6Class(
     },
 
     # core function
-    ROGUE = function(.f = c('GET', 'POST', 'PUT', 'DELETE'), ...) {
+    request = function(.f = c('GET', 'POST', 'PUT', 'DELETE'), ...) {
       .f <- match.arg(.f)
 
       res_got <- 0

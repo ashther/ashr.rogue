@@ -9,7 +9,7 @@ proxySelect <- function(.proxy) {
   result[[1]]
 }
 
-#' rogue function
+#' request function
 #'
 #' @param .f single string like `GET`, `POST`, `PUT` and `DELETE`
 #' @param ... further named parameters which will be pass to `httr` function
@@ -28,9 +28,9 @@ proxySelect <- function(.proxy) {
 #'   list(ip = '1.1.1.1', port = 3128, times = 1),
 #'   list(ip = '2.2.2.2', port = 3128, times = 2) # use times as prob in sample
 #' )
-#' ROGUE('GET', url = 'http://httpbin.org/get', .proxy = proxy, .user_agent = useragent)
+#' request('GET', url = 'http://httpbin.org/get', .proxy = proxy, .user_agent = useragent)
 #' }
-ROGUE <- function(.f = c('GET', 'POST', 'PUT', 'DELETE'), ...,
+request <- function(.f = c('GET', 'POST', 'PUT', 'DELETE'), ...,
                   .proxy = NULL, .user_agent = NULL, iter_max = 10) {
   .f <- match.arg(.f)
 

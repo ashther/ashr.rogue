@@ -36,19 +36,19 @@
 #'
 #' @section Details:
 #'
-#' \code{Rogue$new()} creates a new Rogue object
+#' \code{Rogue$new()} creates a new Rogue object.
 #'
-#' \code{rogue$proxy_add()} add new proxy for requesting
+#' \code{rogue$proxy_add()} add new proxy for requesting.
 #'
-#' \code{rogue$proxy_show()} show the proxy connecting history in \code{tibble} format
+#' \code{rogue$proxy_show()} show the proxy connecting history in \code{tibble} format.
 #'
-#' \code{rogue$get()} send \code{get} request to server
+#' \code{rogue$get()} send \code{get} request to server.
 #'
-#' \code{rogue$post()} send \code{post} request to server
+#' \code{rogue$post()} send \code{post} request to server.
 #'
-#' \code{rogue$put()} send \code{put} request to server
+#' \code{rogue$put()} send \code{put} request to server.
 #'
-#' \code{rogue$delete()} send \code{delete} request to server
+#' \code{rogue$delete()} send \code{delete} request to server.
 #'
 #' @importFrom R6 R6Class
 #' @name Rogue
@@ -60,14 +60,14 @@ Rogue <- R6Class(
   public = list(
     proxy = NULL,
     useragent = NULL,
-    iter_max = 10,
+    iter_max = 1,
     is_record = FALSE,
     is_random = FALSE,
     is_quite = FALSE,
 
     # initialize the object
     initialize = function(proxy = NULL, useragent = NULL,
-                          iter_max = min(10, length(proxy)),
+                          iter_max = max(min(10, length(proxy)), 1),
                           is_record = FALSE, is_random = FALSE, is_quite = FALSE) {
 
       self$proxy <- private$proxyCheck(proxy)
@@ -77,7 +77,7 @@ Rogue <- R6Class(
           sprintf('iter_max must be integer or numeric, not %s', typeof(iter_max)),
           call. = FALSE
         )
-      if (iter_max > length(proxy))
+      if (iter_max > length(proxy) & length(proxy) > 0)
         warning(
           sprintf('iter_max should be not bigger than the length of proxy'),
           call. = FALSE
@@ -113,7 +113,8 @@ Rogue <- R6Class(
 
     # add proxy by users anytime
     proxy_add = function(proxy, delete = FALSE) {
-      proxy <- private$proxycheck(proxy)
+      proxy <- private$proxyCheck(proxy)
+      proxy <- private$proxySetdiff(proxy, self$proxy)
       if (length(proxy) == 0) {
         warning('no new proxy to add', call. = FALSE)
         return(invisible())
@@ -124,7 +125,7 @@ Rogue <- R6Class(
         if (length(proxy_to_delete) > length(proxy)) {
           proxy_to_delete <- sample(proxy_to_delete, length(proxy))
         }
-        self$proxy <- setdiff(self$proxy, proxy_to_delete)
+        self$proxy <- private$proxySetdiff(self$proxy, proxy_to_delete)
       }
       self$proxy <- append(self$proxy, proxy)
 
@@ -132,8 +133,11 @@ Rogue <- R6Class(
     },
 
     # show proxy with the tibble format
-    # TODO add dplyr to suggest in DESCRIPTION
     proxy_show = function() {
+      if (length(self$proxy) == 0)
+        return(dplyr::tibble(
+          ip = character(), port = integer(), times = integer()
+        ))
       proxy <- lapply(self$proxy, dplyr::as_tibble)
       proxy <- dplyr::bind_rows(proxy)
       proxy <- dplyr::select(proxy, ip, port, times, dplyr::everything())
@@ -161,10 +165,34 @@ Rogue <- R6Class(
     }
   ), private = list(
 
+    proxySetdiff = function(proxy_l, proxy_r) {
+      if (length(proxy_l) == 0 | length(proxy_r) == 0)
+        return(proxy_l)
+
+      proxy_r_mtx <- t(sapply(proxy_r, function(x)c(x$ip, x$port)))
+
+      Filter(function(x) {
+
+        idx_ip <- which(proxy_r_mtx[, 1] == x$ip)
+        if (!any(idx_ip))
+          return(TRUE)
+        idx_port <- which(proxy_r_mtx[, 2] == x$port)
+        if (!any(idx_ip & idx_port))
+          return(TRUE)
+        return(FALSE)
+
+      }, proxy_l)
+    },
+
     proxyCheck = function(proxy) {
       if (!is.null(proxy)) {
-        if (!'list' %in% class(proxy))
-          stop('proxy must be list class', call. = FALSE)
+        if (!is.list(proxy))
+          stop('proxy must be list or data.frame', call. = FALSE)
+
+        if (is.data.frame(proxy))
+          proxy <- lapply(seq_len(nrow(proxy)), function(x) {
+            as.list(proxy[x, ])
+          })
 
         proxy <- lapply(proxy, function(x) {
           if (!all(c('ip', 'port') %in% names(x)))
@@ -252,6 +280,7 @@ Rogue <- R6Class(
       invisible(TRUE)
     },
 
+    # TODO test this
     # confirm bad proxy
     proxyBadConfirm = function(proxy_bad) {
 

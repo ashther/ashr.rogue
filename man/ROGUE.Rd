@@ -20,8 +20,6 @@ rogue$get(...)
 rogue$post(...)
 rogue$put(...)
 rogue$delete(...)
-
-rogue$proxy_show()
 }
 }
 
@@ -47,12 +45,18 @@ rogue$proxy_show()
 \section{Details}{
 
 
-\code{Rogue$new()} creates a new Rogue object
-\code{rogue$proxy_add()} add new proxy for requesting
-\code{rogue$proxy_show()} show the proxy connecting history in \code{tibble} format
-\code{rogue$get()} send \code{get} request to server
-\code{rogue$post()} send \code{post} request to server
-\code{rogue$put()} send \code{put} request to server
-\code{rogue$delete()} send \code{delete} request to server
+\code{Rogue$new()} creates a new Rogue object.
+
+\code{rogue$proxy_add()} add new proxy for requesting.
+
+\code{rogue$proxy_show()} show the proxy connecting history in \code{tibble} format.
+
+\code{rogue$get()} send \code{get} request to server.
+
+\code{rogue$post()} send \code{post} request to server.
+
+\code{rogue$put()} send \code{put} request to server.
+
+\code{rogue$delete()} send \code{delete} request to server.
 }
 

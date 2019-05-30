@@ -1,7 +1,7 @@
 Package: ashr.rogue
 Type: Package
 Title: Like A Rogue
-Version: 0.2.0
+Version: 0.2.1
 Author: ashther
 Maintainer: ashther <ashther@qq.com>
 Description: A r package wraps httr package, provide multiple try and fake useragent with random proxy.

@@ -66,18 +66,19 @@ Rogue <- R6Class(
     is_quite = FALSE,
 
     # initialize the object
-    initialize = function(proxy = NULL, useragent = NULL,
-                          iter_max = max(min(10, length(proxy)), 1),
+    initialize = function(proxy = NULL, useragent = NULL, iter_max,
                           is_record = FALSE, is_random = FALSE, is_quite = FALSE) {
 
       self$proxy <- private$proxyCheck(proxy)
 
+      if (missing(iter_max))
+        iter_max <- max(min(10, length(self$proxy)), 1)
       if (!is.numeric(iter_max))
         stop(
           sprintf('iter_max must be integer or numeric, not %s', typeof(iter_max)),
           call. = FALSE
         )
-      if (iter_max > length(proxy) & length(proxy) > 0)
+      if (iter_max > length(self$proxy) & length(self$proxy) > 0)
         warning(
           sprintf('iter_max should be not bigger than the length of proxy'),
           call. = FALSE
@@ -280,7 +281,6 @@ Rogue <- R6Class(
       invisible(TRUE)
     },
 
-    # TODO test this
     # confirm bad proxy
     proxyBadConfirm = function(proxy_bad) {
 

@@ -15,15 +15,21 @@ devtools::install_github("ashther/ashr.rogue")
 ```
 
 ## Example
-
-use `ROGUE` function just like in `httr`:
-
 ``` r
-ROGUE('GET', url = 'http://httpbin.org/get', .proxy = proxy, .user_agent = useragent, iter_max = 10)
-```
+# create a Rogue instance
+rogue <- Rogue$new()
+# or with proxy and user-agent, and record the proxy connection history
+rogue <- Rogue$new(proxy = proxys, useragent = useragents, is_record = TRUE)
+# select proxy not randomly, but consider the connection history, which means select better ones
+rogue <- Rogue$new(proxy = proxys, useragent = useragents, is_record = TRUE, is_random = FALSE)
 
-## TODO
-- fix bug in ROGUE function, add sys sleep time between request
-- proxyBadConfirm function
-- R6 maybe?
+# add new proxy any time, and delete old ones
+rogue$proxy_add(proxy_new, delete = TRUE)
+
+# send query
+rogue$get('http://httpbin.org/get')
+
+# check the proxy connection history
+rogue$proxy_show()
+```
 

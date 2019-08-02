@@ -120,7 +120,7 @@ test_that('can use proxy and useragent', {
   temp <- rogue$get('http://httpbin.org/get', httr::authenticate('u', 'p'))
   expect_equal(content(temp)$header$Authorization, 'Basic dTpw')
 
-  proxy <- list(list(ip = '114.67.235.233', port = 3128))
+  proxy <- list(list(ip = '121.33.220.158', port = 808))
   rogue <- Rogue$new(proxy)
   temp <- rogue$get('http://httpbin.org/ip')
   expect_true(proxy[[1]]$ip %in% trimws(unlist(strsplit(content(temp)$origin, ','))))
